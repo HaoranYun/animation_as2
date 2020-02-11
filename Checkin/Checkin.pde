@@ -195,21 +195,19 @@ void draw() {
 }
 
 void drawChain(ArrayList<Float> ballsXi,ArrayList<Float> ballsYi,float anchorX){
-  pushMatrix();
-  line(anchorX,anchorY,ballsXi.get(0),ballsYi.get(0));
-  translate(ballsXi.get(0),ballsYi.get(0));
-  sphere(radius);
-  popMatrix();
-  
-  pushMatrix();
-  line(ballsXi.get(0),ballsYi.get(0),ballsXi.get(1),ballsYi.get(1));
-  translate(ballsXi.get(1),ballsYi.get(1));
-  sphere(radius);
-  popMatrix();
-  
-  pushMatrix();
-  line(ballsXi.get(1),ballsYi.get(1),ballsXi.get(2),ballsYi.get(2));
-  translate(ballsXi.get(2),ballsYi.get(2));
-  sphere(radius);
-  popMatrix();
+  float topX = anchorX;
+  float topY = anchorY;
+  float x,y;
+  for(int i = 0; i<3; i++){
+    x = ballsXi.get(i);
+    y = ballsYi.get(i);
+    pushMatrix();
+    line(topX,topY,x,y);
+    translate(x,y);
+    sphere(radius);
+    popMatrix();
+    topX = x;
+    topY = y;
+  }
+
 }
