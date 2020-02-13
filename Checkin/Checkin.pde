@@ -12,7 +12,7 @@ ArrayList<ArrayList<Float>> ballsVy;
 float start;
 
 void setup() {
-  size(800, 500, P3D);
+  size(800, 800, P3D);
   surface.setTitle("Ball on Spring!");
   start = millis();
   
@@ -25,27 +25,31 @@ void setup() {
   ArrayList<Float> ballsX2 = new ArrayList<Float>();
   ArrayList<Float> ballsX3 = new ArrayList<Float>();
   ballsX.add(ballsX1);
-  ballsX1.add(300f);
-  ballsX1.add(330f);
+  ballsX1.add(250f);
+  ballsX1.add(280f);
   ballsX1.add(360f);
+  ballsX1.add(390f);
   
   ballsX.add(ballsX2);
   ballsX2.add(600f);
   ballsX2.add(630f);
   ballsX2.add(660f);
+  ballsX2.add(690f);
   
   ArrayList<Float> ballsY1 = new ArrayList<Float>();
   ArrayList<Float> ballsY2 = new ArrayList<Float>();
   ArrayList<Float> ballsY3 = new ArrayList<Float>();
   ballsY.add(ballsY1);
-  ballsY1.add(200f);
-  ballsY1.add(250f);
+  ballsY1.add(120f);
+  ballsY1.add(170f);
   ballsY1.add(300f);
+  ballsY1.add(350f);
   
   ballsY.add(ballsY2);
   ballsY2.add(200f);
   ballsY2.add(250f);
   ballsY2.add(300f);
+  ballsY2.add(350f);
   
   ArrayList<Float> ballsVx1 = new ArrayList<Float>();
   ArrayList<Float> ballsVx2 = new ArrayList<Float>();
@@ -54,8 +58,10 @@ void setup() {
   ballsVx1.add(0f);
   ballsVx1.add(0f);
   ballsVx1.add(0f);
+  ballsVx1.add(0f);
   
   ballsVx.add(ballsVx2);
+  ballsVx2.add(0f);
   ballsVx2.add(0f);
   ballsVx2.add(0f);
   ballsVx2.add(0f);
@@ -67,8 +73,10 @@ void setup() {
   ballsVy1.add(0f);
   ballsVy1.add(0f);
   ballsVy1.add(0f);
+  ballsVy1.add(0f);
   
   ballsVy.add(ballsVy2);
+  ballsVy2.add(0f);
   ballsVy2.add(0f);
   ballsVy2.add(0f);
   ballsVy2.add(0f);
@@ -76,14 +84,14 @@ void setup() {
 }
 
 //Simulation Parameters
-float floor = 500;
+float floor = 800;
 float gravity = 9.8;
 float radius = 10;
 float anchorY = 50;
 float restLen = 40;
 float mass = 30; //TRY-IT: How does changing mass affect resting length?
 float k = 30; //TRY-IT: How does changing k affect resting length?
-float kv = 10;
+float kv = 20;
 
 //Inital positions and velocities of masses
 
@@ -103,7 +111,7 @@ void update(float dt,ArrayList<Float> ballsXi, ArrayList<Float> ballsYi, ArrayLi
   
 
   
-  for (int i = 2; i > -1; i--){
+  for (int i = 3; i > -1; i--){
     
    if(i != 0){
      stringTopY = ballsYi.get(i - 1);
@@ -183,7 +191,7 @@ void draw() {
   
   for(int i = 0; i<2; i++){
     
-    update((millis()-start)/1000, ballsX.get(i),ballsY.get(i), ballsVx.get(i), ballsVy.get(i),anchorX); //We're using a fixed, large dt -- this is a bad idea!!
+    update((millis()-start)/200, ballsX.get(i),ballsY.get(i), ballsVx.get(i), ballsVy.get(i),anchorX); //We're using a fixed, large dt -- this is a bad idea!!
     fill(0,0,0);
     drawChain(ballsX.get(i),ballsY.get(i),anchorX);
     anchorX+= 300;
@@ -197,8 +205,9 @@ void draw() {
 void drawChain(ArrayList<Float> ballsXi,ArrayList<Float> ballsYi,float anchorX){
   float topX = anchorX;
   float topY = anchorY;
+
   float x,y;
-  for(int i = 0; i<3; i++){
+  for(int i = 0; i<4; i++){
     x = ballsXi.get(i);
     y = ballsYi.get(i);
     pushMatrix();
@@ -209,5 +218,6 @@ void drawChain(ArrayList<Float> ballsXi,ArrayList<Float> ballsYi,float anchorX){
     topX = x;
     topY = y;
   }
+
 
 }
