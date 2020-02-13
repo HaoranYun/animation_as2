@@ -85,13 +85,13 @@ void setup() {
 
 //Simulation Parameters
 float floor = 800;
-float gravity = 9.8;
+float gravity = 1000;
 float radius = 10;
 float anchorY = 50;
-float restLen = 40;
+float restLen = 150;
 float mass = 30; //TRY-IT: How does changing mass affect resting length?
-float k = 30; //TRY-IT: How does changing k affect resting length?
-float kv = 20;
+float k = 160; //TRY-IT: How does changing k affect resting length?
+float kv = 160;
 
 //Inital positions and velocities of masses
 
@@ -108,10 +108,12 @@ void update(float dt,ArrayList<Float> ballsXi, ArrayList<Float> ballsYi, ArrayLi
   float lastForceX = 0;
   float lastForceY = 0;
 
+  float lastForce = 0;
+  float lastVel = 0;
   
 
   
-  for (int i = 3; i > -1; i--){
+  for (int i = 2; i > -1; i--){
     
    if(i != 0){
      stringTopY = ballsYi.get(i - 1);
@@ -142,23 +144,27 @@ void update(float dt,ArrayList<Float> ballsXi, ArrayList<Float> ballsYi, ArrayLi
   //Apply force in the direction of the spring
     float dirX = sx/stringLen;
     float dirY = sy/stringLen;
-    float dampFX = -kv*(velX - lastVelX);
-    float dampFY = -kv*(velY - lastVelY);
+    float projVel = velX*dirX + velY*dirY;
+    lastVel = lastVelX * dirX + lastVelY * dirY;
+    float dampF = -kv*(projVel  - lastVel);
+    
+    float forceY = 0.5* ((stringF + dampF)* dirY - lastForceY);
+    float forceX =  0.5* ((stringF + dampF) * dirX - lastForceX);
+
     
     
-    float forceY = gravity + 0.5*(stringF*dirY + dampFY - lastForceY)/mass;
-    float forceX =  0.5*(stringF*dirX + dampFX - lastForceX)/mass;
-    
-    velX += forceX*dt;
-    velY += forceY*dt;
+    velX += (forceX/mass)*dt;
+    velY += ((forceY + gravity)/mass)*dt;
     
     
     ballX += velX*dt;
     ballY += velY*dt;
     
     
-    lastForceX = stringF*dirX + dampFX;
-    lastForceY = stringF*dirY + dampFY;
+    lastForce = stringF + dampF;
+    
+    lastForceX = lastForce*dirX;
+    lastForceY = lastForce*dirY;
     
   
   //Collision detection and response
@@ -207,7 +213,7 @@ void drawChain(ArrayList<Float> ballsXi,ArrayList<Float> ballsYi,float anchorX){
   float topY = anchorY;
 
   float x,y;
-  for(int i = 0; i<4; i++){
+  for(int i = 0; i<3; i++){
     x = ballsXi.get(i);
     y = ballsYi.get(i);
     pushMatrix();
