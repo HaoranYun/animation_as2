@@ -8,14 +8,18 @@ float floor = 800;
 float gravity = 500;
 float radius = 10;
 float anchorY = 50;
-float restLen = 60;
-float mass = 50; //TRY-IT: How does changing mass affect resting length?
+float restLen = 10;
+float mass = 80; //TRY-IT: How does changing mass affect resting length?
 float k = 200; //TRY-IT: How does changing k affect resting length?
 float kv = 100;
 
 int iter = 0;
 
 float start;
+int horizontalNum = 20;
+int verticalNum = 15;
+
+PVector G = new PVector(0,500,0);
 
 void setup() {
   size(1000, 800, P3D);
@@ -25,9 +29,12 @@ void setup() {
   
 
  Threads = new ArrayList<Thread>();
- Threads.add(new Thread(200,0,6));
- Threads.add(new Thread(800,0,5));
- Threads.add(new Thread(500,0,3));
+ float startX = 100;
+ for (int i = 0; i < horizontalNum; i ++){
+   Threads.add(new Thread(startX,0,verticalNum));
+   startX +=30;
+ }
+
 }
 
 
@@ -40,24 +47,29 @@ void draw() {
   background(255,255,255);
   
   
-  float anchorX = 200;
+
   
-  int numT =2;
+
   
   float now = millis();
-  for(int i = 0; i < 3; i++){
-    updateSingleThread((now-start)/80,i);
+  
+  for(int i = 0; i < horizontalNum; i++){
+    updateSingleThread(( millis()-start)/80,i);
     drawSingleThread(i);
+
   }
+  
+  for (int j = 1; j < horizontalNum; j ++){
+    drawHorizontalLink(j);
+  }
+
 
   start = millis();
   if(iter > 2){
   //noLoop();
   }
-  
-  if(keyPressed  && keyCode == UP){
-    stop();
-  }
+
+ println("Frame rate: " + int(frameRate));
 }
 
 
@@ -77,8 +89,8 @@ void updateSingleThread(float dt, int idx){
      lastVel = curr.velList.get(i - 1);
    }
    else {
-     stringTop = new PVector(0,0);
-     lastVel = new PVector(0,0);
+     stringTop = new PVector(0,0,0);
+     lastVel = new PVector(0,0,0);
    }
   
     pos = curr.posList.get(i);
@@ -88,7 +100,7 @@ void updateSingleThread(float dt, int idx){
     
     PVector s = PVector.sub(pos,stringTop);
 
-    float stringLen = sqrt(s.x*s.x + s.y*s.y);
+    float stringLen = sqrt(PVector.dot(s,s));
 
   
   //Compute (damped) Hooke's law for the spring
@@ -101,18 +113,14 @@ void updateSingleThread(float dt, int idx){
     float projLastVel = PVector.dot(lastVel,dir);
     float dampF = -kv*(projVel  - projLastVel);
     
+    PVector force = PVector.mult(dir,(stringF + dampF)).sub(lastForce).add(G).mult(0.5);
     
-    float forceY = 0.5* ((stringF + dampF)* dir.y - lastForce.y);
-    float forceX =  0.5* ((stringF + dampF) * dir.x - lastForce.x);
+    vel.add(PVector.div(force,mass).mult(dt));
+    pos.add(PVector.mult(vel,dt));
 
-    vel.x += (forceX/mass)*dt;
-    vel.y += ((forceY + gravity)/mass)*dt;
-    pos.x += vel.x * dt;
-    pos.y += vel.y * dt;
-    
     
     float f = stringF + dampF;
-    lastForce = new PVector(f* dir.x, f* dir.y );
+    lastForce = PVector.mult(dir,f);
     
   //Collision detection and response
     if (pos.y+radius > floor){
@@ -133,14 +141,30 @@ void drawSingleThread(int idx){
   pushMatrix();
   translate(curr.anchor.x,curr.anchor.y);
   for(int i = 0; i < curr.len; i ++){
+
     PVector pos = curr.posList.get(i);
     line(topX,topY, pos.x,pos.y);
-    translate(pos.x,pos.y);
-    sphere(radius);
-    translate(- pos.x, -pos.y);
+    //translate(pos.x,pos.y);
+    //sphere(radius);
+    //translate(- pos.x, -pos.y);
     topX = pos.x;
     topY = pos.y;
   }
   popMatrix();
 
+}
+
+void drawHorizontalLink(int idx){
+    Thread prev = Threads.get(idx -1);
+    Thread curr = Threads.get(idx);
+    
+    PVector acPrev = prev.anchor;
+    PVector acCurr = curr.anchor;
+    
+    for(int i = 0; i < verticalNum; i++){
+
+      PVector posPrev = PVector.add(acPrev, prev.posList.get(i));
+      PVector posCurr = PVector.add(acCurr, curr.posList.get(i));
+      line(posPrev.x,posPrev.y,posCurr.x,posCurr.y);
+    }
 }
