@@ -1,60 +1,74 @@
 
 //features
-boolean textured = false;
+boolean textured = true;
 boolean wind = false;
 boolean bend = false;
+boolean fixRow = true;
 
 // parameters 
 float floor = 800;
 float gravity = 500;
 float radius = 10;
-float anchorY = 50;
+
+// tuning parameters 
 float restLen = 10;
-float mass = 10; 
-float ks = 10000; 
-float kd = 200;
+float stepX = 10; // the initial horizontal distance between springs
+float stepY = 10;  // the initial vertical distance between springs
+float mass = 20; 
+float ks = 500; 
+float kd = 20;
+PVector G = new PVector(0,-0.01,0);
+int drawPerframe = 30;
 
 
+
+PImage textureImg;
 
 
 float start;
 float now ;
 // the number of springs in horizontal(nx), vertical(ny)
 int nx= 30;
-int ny = 30;
+int ny =30;
 
-PVector G = new PVector(0,-1,0);
+float anchorX = 300;
+float anchorY = 100;
+
 
 int iter;
 
 Spring[][] Springs = new Spring[nx][ny];
 
-
-
 void setup() {
   size(1000, 800, P3D);
-  start = millis();
+
   
-  float stepX = 10;
-  float stepY = 10;
+
+  
+  textureImg = loadImage("t2.jpg");
+  
   
   for(int i = 0; i < nx; i ++){
     for (int j = 0; j < ny; j ++){
       
-      Springs[i][j] = new Spring(300+j*stepX, 100 + i * stepY, 0);
-      //if(j == 0){
-      //  Springs[i][j].pos.y -= i*5;
-      //}
-      println(300+j*stepX  , 100, 30+i* stepY);
+      Springs[i][j] = new Spring(300+j*stepX + i * 5, 100, i * stepY);
       Springs[i][j].isLive = true;
     }
   }
-  //for(int i = 0; i < nx; i ++){
-  //  Springs[i][0].fixed = true;
-  //}
-  Springs[0][0].fixed = true;
-  Springs[0][ny-1].fixed = true;
+
+  if(fixRow){
+    for(int j = 0; j < nx; j++){
+      Springs[0][j].fixed = true;
+    }
+  }
+   else{
+     Springs[0][0].fixed = true;
+     Springs[0][ny-1].fixed = true;
+   }
+
   
+  
+  start = millis();
 }
 
 
@@ -63,15 +77,14 @@ void draw() {
   iter++;
   background(255,255,255);
   now = millis();
-  //(millis()-start)/1000
-  updateSprings(0.01);
+  for (int i = 0; i < drawPerframe; i++){
+    updateSprings((now-start)/1000);
+  }
   
   stroke(155);
   drawStrings();
 
   start = millis();
-  //println("Frame rate: " + frameRate);
-  
 
 }
 
@@ -95,7 +108,7 @@ void updateSprings(float dt){
     for (int j = 0; j < ny; j ++){   
       e = PVector.sub(Springs[i+1][j].pos, Springs[i][j].pos);
       stringLen = sqrt(PVector.dot(e,e));
-      e.div(stringLen);
+      e.normalize();
       v1 = PVector.dot(e, Springs[i][j].vel);
       v2 = PVector.dot(e, Springs[i+1][j].vel);
       f = -ks *(restLen - stringLen) - kd * (v1- v2);
@@ -112,7 +125,7 @@ void updateSprings(float dt){
       
       e = PVector.sub(Springs[i][j + 1].pos, Springs[i][j].pos);
       stringLen = sqrt(PVector.dot(e,e));
-      e.div(stringLen);
+      e.normalize();
       v1 = PVector.dot(e, Springs[i][j].vel);
       v2 = PVector.dot(e, Springs[i][j + 1].vel);
       f = -ks *( restLen - stringLen) - kd * (v1- v2);
@@ -139,16 +152,35 @@ void updateSprings(float dt){
 }
 
 void drawStrings(){
+  PVector pos;
+  
   if(textured){
+   beginShape(QUAD);
+   texture(textureImg);
+   noStroke();
+    for(int i = 0; i < nx - 1; i++){
+      for (int j = 0; j < ny -1; j ++){
+        pos = Springs[i][j].pos;
+        vertex(pos.x, pos.y, pos.z, textureImg.width*i/nx, textureImg.height*j /ny );
+        pos = Springs[i + 1][j ].pos;
+        vertex(pos.x, pos.y, pos.z,textureImg.width*(i + 1)/nx, textureImg.height*j /ny);
+        pos = Springs[i + 1][j + 1 ].pos;
+        vertex(pos.x, pos.y, pos.z,textureImg.width*(i + 1)/nx, textureImg.height*(j + 1) /ny );
+        pos = Springs[i][j + 1].pos;
+        vertex(pos.x, pos.y, pos.z, textureImg.width*i /nx, textureImg.height*(j + 1) /ny);
+      }
+     
+    }
     
+    endShape();
   }
   else{
     
-    PVector pos,below, right;
+    PVector below, right;
     for(int i = 0; i < nx; i++){
       for (int j = 0; j < ny; j ++){
         pos = Springs[i][j].pos;
-        if(pos.z != 0) print("!");
+
         //stroke(abs(pos.x), abs(pos.x), abs(pos.y));
 //  top row 
          if(i == nx - 1 && j < ny-1) {
